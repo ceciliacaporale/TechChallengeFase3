@@ -1,21 +1,74 @@
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import logo from "../assets/icon3.png";
+
 export default function Header() {
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const isActive = (path) => location.pathname === path;
+
   return (
-    <header className="header">
-      <div className="header__logo" aria-hidden="true">
-        <span className="header__logo-swoosh" />
+    <header className="home-header">
+      <Link to="/home" className="header-logo" title="Ir para a Home">
+        <img src={logo} alt="Logo Blog Educacional" />
+      </Link>
+
+      <div className="header-title-container">
+        <h1>Blog Educacional</h1>
       </div>
-      <h1 className="header__title">Postagens</h1>
-      <button className="header__user" aria-label="Conta do usuário">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-          <circle cx="12" cy="8" r="3.6" stroke="currentColor" strokeWidth="1.8" />
-          <path
-            d="M4.5 19.2c1.4-3.2 4.2-4.9 7.5-4.9s6.1 1.7 7.5 4.9"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-          />
-        </svg>
-      </button>
+
+      <nav className="header-nav">
+        <Link
+          to="/home"
+          className={`nav-link ${isActive("/home") ? "active" : ""}`}
+        >
+          Postagens
+        </Link>
+        {isAuthenticated && (
+          <>
+            <Link
+              to="/criar"
+              className={`nav-link ${isActive("/criar") ? "active" : ""}`}
+            >
+              + Nova Postagem
+            </Link>
+            <Link
+              to="/admin"
+              className={`nav-link ${isActive("/admin") ? "active" : ""}`}
+            >
+              Administração
+            </Link>
+          </>
+        )}
+      </nav>
+
+      <div className="header-user">
+        {isAuthenticated ? (
+          <div className="user-profile">
+            <span className="user-name" title={user.email}>
+              👤 {user.nome}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="btn-logout"
+              title="Encerrar sessão"
+            >
+              Sair
+            </button>
+          </div>
+        ) : (
+          <Link to="/login" className="btn-login-header">
+            Área Docente
+          </Link>
+        )}
+      </div>
     </header>
-  )
+  );
 }

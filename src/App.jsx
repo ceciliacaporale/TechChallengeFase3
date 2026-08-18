@@ -1,89 +1,67 @@
-import { useState } from 'react'
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Toast from "./components/Toast";
 
 import Home from "./pages/home";
+import Login from "./pages/Login";
+import PostDetail from "./pages/PostDetail";
+import CreatePost from "./pages/CreatePost";
+import EditPost from "./pages/EditPost";
+import Admin from "./pages/Admin";
+
 import "./App.css";
-
-import logo from "./assets/icon3.png";
-import card from "./assets/card.png";
-
-function Login() {
-  const navigate = useNavigate();
-
-  function acessar() {
-    navigate("/home");
-  }
-
-  return (
-    <div className="container">
-
-      <header className="header">
-        <img
-          src={logo}
-          alt="logo"
-          className="logoTop"
-        />
-
-        <h1>Blog Educacional</h1>
-      </header>
-
-
-      <main className="content">
-
-        <div className="logoCard">
-          <img
-            src={card}
-            alt="Logo"
-          />
-        </div>
-
-
-        <div className="login">
-
-          <input
-            type="text"
-            placeholder="Usuário"
-          />
-
-          <input
-            type="password"
-            placeholder="Senha"
-          />
-
-          <button onClick={acessar}>
-            Acessar
-          </button>
-
-        </div>
-
-      </main>
-
-    </div>
-  );
-}
-
 
 function App() {
   return (
-    <BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Toast />
+        <Routes>
+          {/* Rota inicial retrô/redirecionamento */}
+          <Route path="/" element={<Navigate to="/home" replace />} />
 
-      <Routes>
+          {/* Rota de Autenticação */}
+          <Route path="/login" element={<Login />} />
 
-        <Route
-          path="/"
-          element={<Login />}
-        />
+          {/* Rotas Públicas */}
+          <Route path="/home" element={<Home />} />
+          <Route path="/post/:id" element={<PostDetail />} />
 
-        <Route
-          path="/home"
-          element={<Home />}
-        />
+          {/* Rotas Protegidas (Exclusivas para Docentes Autenticados) */}
+          <Route
+            path="/criar"
+            element={
+              <ProtectedRoute>
+                <CreatePost />
+              </ProtectedRoute>
+            }
+          />
 
-      </Routes>
+          <Route
+            path="/editar/:id"
+            element={
+              <ProtectedRoute>
+                <EditPost />
+              </ProtectedRoute>
+            }
+          />
 
-    </BrowserRouter>
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rota Fallback 404 */}
+          <Route path="*" element={<Navigate to="/home" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
-
 
 export default App;

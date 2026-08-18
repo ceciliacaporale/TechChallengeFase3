@@ -1,8 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import Header from "../components/Header";
+import PostCard from "../components/PostCard";
+import SearchBar from "../components/SearchBar";
+import ConfirmModal from "../components/ConfirmModal";
+import { fetchPosts, deletePost } from "../services/posts";
+import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 import "../styles/home.css";
-import { fetchPosts } from "../services/posts";
-import logo from "../assets/icon3.png";
-
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
@@ -10,84 +14,136 @@ export default function Home() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    async function carregarPosts() {
-      try {
-        const data = await fetchPosts();
-        setPosts(data);
-      } catch (err) {
-        console.error("Erro ao carregar posts:", err);
-        setError("Não foi possível carregar os posts.");
-      } finally {
-        setLoading(false);
-      }
+  const [postToDelete, setPostToDelete] = useState(null);
+  const { isAuthenticated, showNotification } = useAuth();
+
+  const carregarPosts = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await fetchPosts({ search });
+      setPosts(data);
+    } catch (err) {
+      console.error("Erro ao carregar posts:", err);
+      setError("Não foi possível carregar as postagens. Tente novamente.");
+    } finally {
+      setLoading(false);
     }
+  }, [search]);
 
-    carregarPosts();
-  }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      carregarPosts();
+    }, 250);
 
-  const postsFiltrados = posts.filter((p) =>
-    p.titulo.toLowerCase().includes(search.toLowerCase())
-  );
+    return () => clearTimeout(timer);
+  }, [carregarPosts]);
+
+  const handleDeletePrompt = (post) => {
+    setPostToDelete(post);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!postToDelete) return;
+    try {
+      await deletePost(postToDelete.id);
+      showNotification(`Post "${postToDelete.titulo}" excluído com sucesso.`, "success");
+      setPosts((prev) => prev.filter((p) => String(p.id) !== String(postToDelete.id)));
+    } catch (err) {
+      console.error("Erro ao excluir post:", err);
+      showNotification("Erro ao excluir o post.", "error");
+    } finally {
+      setPostToDelete(null);
+    }
+  };
 
   return (
     <>
-      <header className="home-header">
-        <div className="header-logo">
-          <img src={logo} alt="Logo" />
-        </div>
-
-        <h1>Postagens</h1>
-
-        <div className="header-user">
-          <div className="user-icon">👤</div>
-        </div>
-      </header>
+      <Header />
 
       <main className="home-content">
-        <div className="search-bar">
-          <div className="search-input-wrapper">
-            <input
-              type="text"
-              placeholder="Buscar postagens..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <span className="search-icon">🔍</span>
+        <section className="home-banner">
+          <div className="banner-info">
+            <h2>Artigos & Conteúdos Educacionais</h2>
+            <p>
+              Explore publicações desenvolvidas por nossos professores e
+              pesquisadores. Aprenda sobre tecnologia, programação e inovação.
+            </p>
           </div>
-          <button className="filter-button" aria-label="Filtrar">
-            ☰
-          </button>
-        </div>
+          {isAuthenticated && (
+            <div className="banner-actions">
+              <Link to="/criar" className="btn-cta-create">
+                Criar Novo Artigo
+              </Link>
+            </div>
+          )}
+        </section>
 
-        {loading && <p>Carregando posts...</p>}
-        {error && <p>{error}</p>}
+        <section className="search-section">
+          <SearchBar
+            value={search}
+            onChange={setSearch}
+            onClear={() => setSearch("")}
+          />
+        </section>
 
-        {!loading && !error && (
-          <div className="posts-grid">
-            {postsFiltrados.map((post) => (
-              <article key={post.id} className="post-card">
-                <h2>{post.titulo}</h2>
-
-                <p className="post-content">{post.conteudo}</p>
-
-                <div className="post-info">
-                  <strong>{post.autor}</strong>
-                  <span>
-                    {post.data
-                      ? new Date(post.data).toLocaleDateString("pt-BR")
-                      : ""}
-                  </span>
-                </div>
-              </article>
-            ))}
-
-            {postsFiltrados.length === 0 && (
-              <p>Nenhum post encontrado.</p>
-            )}
+        {loading && (
+          <div className="state-message loading-state">
+            <div className="spinner"></div>
+            <p>Carregando postagens...</p>
           </div>
         )}
+
+        {error && (
+          <div className="state-message error-state">
+            <p>⚠️ {error}</p>
+            <button onClick={carregarPosts} className="btn-retry">
+              Tentar Novamente
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <>
+            {posts.length > 0 ? (
+              <div className="posts-grid">
+                {posts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onDelete={handleDeletePrompt}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="state-message empty-state">
+                <h3>Nenhuma postagem encontrada</h3>
+                <p>
+                  {search
+                    ? `Não foram encontradas postagens com o termo "${search}".`
+                    : "Ainda não existem postagens cadastradas no blog."}
+                </p>
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="btn-clear-search"
+                  >
+                    Limpar filtro de busca
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
       </main>
+
+      <ConfirmModal
+        isOpen={!!postToDelete}
+        title="Confirmar Exclusão"
+        message={`Deseja realmente excluir a postagem "${postToDelete?.titulo}"? Esta ação não pode ser desfeita.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setPostToDelete(null)}
+      />
     </>
   );
 }
