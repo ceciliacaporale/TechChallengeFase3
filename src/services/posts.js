@@ -161,95 +161,111 @@ export async function fetchPostById(id) {
   }
   return normalizePost(found);
 }
-
 export async function createPost(postData) {
-  const newPost = {
-    titulo: postData.titulo,
-    conteudo: postData.conteudo,
-    autor: postData.autor || "Professor",
-    data: new Date().toISOString(),
-    comentarios: [],
-  };
+  const token = localStorage.getItem(
+    "tech_challenge_token"
+  );
 
-  if (API_URL) {
-    try {
-      const response = await fetch(`${API_URL}/posts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newPost),
-      });
-      if (response.ok) {
-        const created = await response.json();
-        return normalizePost(created);
-      }
-    } catch (err) {
-      console.warn("Falha no POST via REST API. Salvando localmente:", err);
-    }
+  if (!token) {
+    throw new Error(
+      "Usuário não autenticado."
+    );
   }
 
-  const localPosts = getLocalPosts();
-  const createdLocalPost = {
-    ...newPost,
-    id: Date.now().toString(),
-  };
-  localPosts.unshift(createdLocalPost);
-  saveLocalPosts(localPosts);
-  return normalizePost(createdLocalPost);
+  const response = await fetch(
+    `${API_URL}/posts`,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+
+      body: JSON.stringify({
+        title: postData.titulo,
+        content: postData.conteudo,
+      }),
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ||
+        data.message ||
+        `Erro HTTP ${response.status}`
+    );
+  }
+
+  return normalizePost(data);
 }
 
 export async function updatePost(id, postData) {
+  const token = localStorage.getItem("tech_challenge_token");
+
+  if (!token) {
+    throw new Error("Usuário não autenticado.");
+  }
+
   const updatedPayload = {
-    titulo: postData.titulo,
-    conteudo: postData.conteudo,
-    autor: postData.autor,
+    title: postData.title ?? postData.titulo,
+    content: postData.content ?? postData.conteudo,
   };
 
-  if (API_URL) {
-    try {
-      const response = await fetch(`${API_URL}/posts/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedPayload),
-      });
-      if (response.ok) {
-        const updated = await response.json();
-        return normalizePost(updated);
-      }
-    } catch (err) {
-      console.warn("Falha no PUT via REST API. Salvando localmente:", err);
+  const response = await fetch(
+    `${API_URL}/posts/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updatedPayload),
     }
+  );
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ||
+        data.message ||
+        `Erro HTTP ${response.status}`
+    );
   }
 
-  const localPosts = getLocalPosts();
-  const index = localPosts.findIndex((p) => String(p.id) === String(id));
-  if (index === -1) {
-    throw new Error("Post não encontrado para atualização.");
-  }
-  localPosts[index] = {
-    ...localPosts[index],
-    ...updatedPayload,
-  };
-  saveLocalPosts(localPosts);
-  return normalizePost(localPosts[index]);
+  return normalizePost(data);
 }
 
 export async function deletePost(id) {
-  if (API_URL) {
-    try {
-      const response = await fetch(`${API_URL}/posts/${id}`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
-        return true;
-      }
-    } catch (err) {
-      console.warn("Falha no DELETE via REST API. Removendo localmente:", err);
-    }
+  const token = localStorage.getItem("tech_challenge_token");
+
+  if (!token) {
+    throw new Error("Usuário não autenticado.");
   }
 
-  let localPosts = getLocalPosts();
-  localPosts = localPosts.filter((p) => String(p.id) !== String(id));
-  saveLocalPosts(localPosts);
+  const response = await fetch(
+    `${API_URL}/posts/${id}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ||
+        data.message ||
+        `Erro HTTP ${response.status}`
+    );
+  }
+
   return true;
 }
 

@@ -9,6 +9,9 @@ import PostDetail from "./pages/PostDetail";
 import CreatePost from "./pages/CreatePost";
 import EditPost from "./pages/EditPost";
 import Admin from "./pages/Admin";
+import CreateUser from "./pages/CreateUser";
+import Gerenciar from "./pages/Gerencia";
+import EditUser from "./pages/EditUser";
 
 import "./App.css";
 
@@ -54,6 +57,35 @@ function App() {
                 <Admin />
               </ProtectedRoute>
             }
+          
+          />
+           <Route
+            path="/gerencia"
+            element={
+              <ProtectedRoute>
+                <Gerenciar />
+              </ProtectedRoute>
+            }
+            
+          />
+
+          <Route
+            path="/editaruser/:id"
+            element={
+              <ProtectedRoute>
+                <EditUser />
+              </ProtectedRoute>
+            }
+          />
+            
+           <Route
+            path="/users"
+            element={
+              <ProtectedRoute>
+                <CreateUser />
+              </ProtectedRoute>
+            }
+            
           />
 
           {/* Rota Fallback 404 */}

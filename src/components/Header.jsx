@@ -45,6 +45,12 @@ export default function Header() {
             >
               Administração
             </Link>
+            <Link
+              to="/gerencia"
+              className={`nav-link ${isActive("/gerencia") ? "active" : ""}`}
+            >
+              Gerenciar usuário
+            </Link>
           </>
         )}
       </nav>
