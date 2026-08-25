@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 export default function EditPost() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { showNotification } = useAuth();
+  const {showNotification } = useAuth();
 
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");

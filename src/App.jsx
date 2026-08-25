@@ -35,7 +35,7 @@ function App() {
           <Route
             path="/criar"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["Docente", "Admin", "admin", "docente"]}>
                 <CreatePost />
               </ProtectedRoute>
             }
@@ -44,7 +44,7 @@ function App() {
           <Route
             path="/editar/:id"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["Docente", "Admin", "admin",, "docente"]}>
                 <EditPost />
               </ProtectedRoute>
             }
@@ -53,7 +53,7 @@ function App() {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["Docente", "Admin","admin", "docente"]}>
                 <Admin />
               </ProtectedRoute>
             }
@@ -62,7 +62,7 @@ function App() {
            <Route
             path="/gerencia"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["Admin", "admin"]}>
                 <Gerenciar />
               </ProtectedRoute>
             }
@@ -72,7 +72,7 @@ function App() {
           <Route
             path="/editaruser/:id"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["Admin", "admin"]}>
                 <EditUser />
               </ProtectedRoute>
             }
@@ -81,7 +81,7 @@ function App() {
            <Route
             path="/users"
             element={
-              <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={["Admin", "admin"]}>
                 <CreateUser />
               </ProtectedRoute>
             }

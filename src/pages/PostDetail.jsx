@@ -20,6 +20,11 @@ export default function PostDetail() {
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+ const role = user?.role?.toLowerCase();
+
+  const isAdmin = role === "admin";
+  const isDocente = role === "docente";
+
   useEffect(() => {
     async function carregarPost() {
       setLoading(true);
@@ -110,7 +115,7 @@ export default function PostDetail() {
             ← Voltar para lista
           </button>
 
-          {isAuthenticated && post && (
+          { isAuthenticated && (isDocente || isAdmin) && post && (
             <div className="detail-teacher-actions">
               <Link to={`/editar/${post.id}`} className="btn-edit-post">
                 Editar Postagem

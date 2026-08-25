@@ -14,10 +14,23 @@ export default function Header() {
 
   const isActive = (path) => location.pathname === path;
 
+  // Role do usuário
+  const role = user?.role?.toLowerCase();
+
+  const isAdmin = role === "admin";
+  const isDocente = role === "docente";
+
   return (
     <header className="home-header">
-      <Link to="/home" className="header-logo" title="Ir para a Home">
-        <img src={logo} alt="Logo Blog Educacional" />
+      <Link
+        to="/home"
+        className="header-logo"
+        title="Ir para a Home"
+      >
+        <img
+          src={logo}
+          alt="Logo Blog Educacional"
+        />
       </Link>
 
       <div className="header-title-container">
@@ -25,42 +38,64 @@ export default function Header() {
       </div>
 
       <nav className="header-nav">
+
+        {/* Todos os usuários */}
         <Link
           to="/home"
-          className={`nav-link ${isActive("/home") ? "active" : ""}`}
+          className={`nav-link ${
+            isActive("/home") ? "active" : ""
+          }`}
         >
           Postagens
         </Link>
-        {isAuthenticated && (
-          <>
-            <Link
-              to="/criar"
-              className={`nav-link ${isActive("/criar") ? "active" : ""}`}
-            >
-              + Nova Postagem
-            </Link>
-            <Link
-              to="/admin"
-              className={`nav-link ${isActive("/admin") ? "active" : ""}`}
-            >
-              Administração
-            </Link>
-            <Link
-              to="/gerencia"
-              className={`nav-link ${isActive("/gerencia") ? "active" : ""}`}
-            >
-              Gerenciar usuário
-            </Link>
-          </>
+
+        {/* Docente e Admin */}
+        {(isDocente || isAdmin) && (
+          <Link
+            to="/criar"
+            className={`nav-link ${
+              isActive("/criar") ? "active" : ""
+            }`}
+          >
+            + Nova Postagem
+          </Link>
+        )}
+
+        {/* Docente e Admin */}
+        {(isDocente || isAdmin) && (
+          <Link
+            to="/admin"
+            className={`nav-link ${
+              isActive("/admin") ? "active" : ""
+            }`}
+          >
+            Administração
+          </Link>
+        )}
+
+        {/* Somente Admin */}
+        {isAdmin && (
+          <Link
+            to="/gerencia"
+            className={`nav-link ${
+              isActive("/gerencia") ? "active" : ""
+            }`}
+          >
+            Gerenciar usuário
+          </Link>
         )}
       </nav>
 
       <div className="header-user">
         {isAuthenticated ? (
           <div className="user-profile">
-            <span className="user-name" title={user.email}>
+            <span
+              className="user-name"
+              title={user.email}
+            >
               👤 {user.nome}
             </span>
+
             <button
               onClick={handleLogout}
               className="btn-logout"
@@ -70,7 +105,10 @@ export default function Header() {
             </button>
           </div>
         ) : (
-          <Link to="/login" className="btn-login-header">
+          <Link
+            to="/login"
+            className="btn-login-header"
+          >
             Área Docente
           </Link>
         )}

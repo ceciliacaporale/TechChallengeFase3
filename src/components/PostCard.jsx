@@ -13,7 +13,12 @@ function formatDate(value) {
 }
 
 export default function PostCard({ post, onDelete }) {
-  const { isAuthenticated } = useAuth();
+  const {user, isAuthenticated } = useAuth();
+  
+  const role = user?.role?.toLowerCase();
+
+  const isAdmin = role === "admin";
+  const isDocente = role === "docente";
 
   if (!post) {
     return <article className="post-card post-card--empty" aria-hidden="true" />;
@@ -51,7 +56,7 @@ export default function PostCard({ post, onDelete }) {
           Ler Post Completo →
         </Link>
 
-        {isAuthenticated && (
+        {isAuthenticated && (isDocente || isAdmin) &&  (
           <div className="admin-quick-actions">
             <Link
               to={`/editar/${post.id}`}
@@ -60,7 +65,7 @@ export default function PostCard({ post, onDelete }) {
             >
               ✏️
             </Link>
-            {onDelete && (
+            {isAuthenticated && (isDocente || isAdmin) && onDelete && (
               <button
                 onClick={() => onDelete(post)}
                 className="btn-quick-delete"

@@ -15,7 +15,12 @@ export default function Home() {
   const [search, setSearch] = useState("");
 
   const [postToDelete, setPostToDelete] = useState(null);
-  const { isAuthenticated, showNotification } = useAuth();
+  const {user, isAuthenticated, showNotification } = useAuth();
+
+  const role = user?.role?.toLowerCase();
+
+  const isAdmin = role === "admin";
+  const isDocente = role === "docente";
 
   const carregarPosts = useCallback(async () => {
     setLoading(true);
@@ -70,7 +75,7 @@ export default function Home() {
               pesquisadores. Aprenda sobre tecnologia, programação e inovação.
             </p>
           </div>
-          {isAuthenticated && (
+          {isAuthenticated && (isDocente || isAdmin) && (
             <div className="banner-actions">
               <Link to="/criar" className="btn-cta-create">
                 Criar Novo Artigo
