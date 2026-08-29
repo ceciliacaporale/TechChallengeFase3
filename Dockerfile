@@ -14,13 +14,13 @@ FROM node:20-alpine AS runner
 ENV NODE_ENV=production
 
 WORKDIR /usr/src/app
+
 COPY package*.json ./
 
-RUN npm ci --only=production
+RUN npm ci --include=dev
 
-COPY --from=builder /usr/src/app/src ./src
-COPY --from=builder /usr/src/app/index.js ./index.js
+COPY --from=builder /usr/src/app/dist ./dist
 
 EXPOSE 3000
 
-CMD ["node", "index.js"]
+CMD ["npm", "start"]
