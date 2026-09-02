@@ -112,13 +112,18 @@ export default function Home() {
           <>
             {posts.length > 0 ? (
               <div className="posts-grid">
-                {posts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onDelete={handleDeletePrompt}
-                  />
-                ))}
+                {posts.filter((post) => {
+                      const ativo = localStorage.getItem(`post_ativo_${post.id}`);
+                      return ativo !== "false";
+                    })
+                    .map((post) => (
+                      <PostCard
+                        key={post.id}
+                        post={post}
+                        onDelete={handleDeletePrompt}
+                      />
+                    ))}
+               
               </div>
             ) : (
               <div className="state-message empty-state">

@@ -12,6 +12,7 @@ import Admin from "./pages/Admin";
 import CreateUser from "./pages/CreateUser";
 import Gerenciar from "./pages/Gerencia";
 import EditUser from "./pages/EditUser";
+import Perfil from  "./pages/EditPerfil";
 
 import "./App.css";
 
@@ -30,6 +31,9 @@ function App() {
           {/* Rotas Públicas */}
           <Route path="/home" element={<Home />} />
           <Route path="/post/:id" element={<PostDetail />} />
+          <Route path="/perfil" element={<Perfil />} />
+
+          
 
           {/* Rotas Protegidas (Exclusivas para Docentes Autenticados) */}
           <Route
@@ -44,7 +48,7 @@ function App() {
           <Route
             path="/editar/:id"
             element={
-              <ProtectedRoute allowedRoles={["Docente", "Admin", "admin",, "docente"]}>
+              <ProtectedRoute allowedRoles={["Docente", "Admin", "admin","docente"]}>
                 <EditPost />
               </ProtectedRoute>
             }
@@ -71,11 +75,7 @@ function App() {
 
           <Route
             path="/editaruser/:id"
-            element={
-              <ProtectedRoute allowedRoles={["Admin", "admin"]}>
-                <EditUser />
-              </ProtectedRoute>
-            }
+            element={ <EditUser /> }
           />
             
            <Route

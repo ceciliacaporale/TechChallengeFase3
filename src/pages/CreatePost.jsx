@@ -1,117 +1,238 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
 import Header from "../components/Header";
-import { createPost } from "../services/posts";
+import PostCard from "../components/PostCard";
+import SearchBar from "../components/SearchBar";
+import ConfirmModal from "../components/ConfirmModal";
+import { fetchPosts, deletePost } from "../services/posts";
 import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
+import "../styles/home.css";
 
-export default function CreatePost() {
-  const { user, showNotification } = useAuth();
-  const navigate = useNavigate();
+export default function Home() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
 
-  const [titulo, setTitulo] = useState("");
-  const [autor, setAutor] = useState(user?.nome || "Prof. Dr. Eduardo Silva");
-  const [conteudo, setConteudo] = useState("");
+  const [postToDelete, setPostToDelete] = useState(null);
 
-  const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState("");
+  const { user, isAuthenticated, showNotification } = useAuth();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const role = user?.role?.toLowerCase();
 
-    if (!titulo.trim() || !conteudo.trim() || !autor.trim()) {
-      setErro("Por favor, preencha todos os campos obrigatórios.");
-      return;
-    }
+  const isAdmin = role === "admin";
+  const isDocente = role === "docente";
 
-    setSalvando(true);
-    setErro("");
+  const carregarPosts = useCallback(async () => {
+    setLoading(true);
+    setError("");
 
     try {
-      const novoPost = await createPost({
-        titulo: titulo.trim(),
-        autor: autor.trim(),
-        conteudo: conteudo.trim(),
-      });
+      const data = await fetchPosts({ search });
 
-      showNotification(`Post "${novoPost.titulo}" publicado com sucesso!`, "success");
-      navigate(`/post/${novoPost.id}`);
+      setPosts(data);
     } catch (err) {
-      console.error("Erro ao criar post:", err);
-      setErro("Não foi possível criar a postagem. Tente novamente.");
+      console.error("Erro ao carregar posts:", err);
+
+      setError(
+        "Não foi possível carregar as postagens. Tente novamente."
+      );
     } finally {
-      setSalvando(false);
+      setLoading(false);
+    }
+  }, [search]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      carregarPosts();
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [carregarPosts]);
+
+  const handleDeletePrompt = (post) => {
+    setPostToDelete(post);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!postToDelete) return;
+
+    try {
+      await deletePost(postToDelete.id);
+
+      // Remove também o status salvo no navegador
+      localStorage.removeItem(`post_ativo_${postToDelete.id}`);
+
+      showNotification(
+        `Post "${postToDelete.titulo}" excluído com sucesso.`,
+        "success"
+      );
+
+      setPosts((prev) =>
+        prev.filter(
+          (p) => String(p.id) !== String(postToDelete.id)
+        )
+      );
+    } catch (err) {
+      console.error("Erro ao excluir post:", err);
+
+      showNotification(
+        "Erro ao excluir o post.",
+        "error"
+      );
+    } finally {
+      setPostToDelete(null);
     }
   };
+
+  /*
+   * FILTRA OS POSTS ATIVOS
+   *
+   * Se não existir nada no localStorage,
+   * o post será considerado ativo.
+   *
+   * Se estiver salvo como "false",
+   * o post não aparece.
+   */
+  const postsAtivos = posts.filter((post) => {
+    const ativo = localStorage.getItem(
+      `post_ativo_${post.id}`
+    );
+
+    return ativo !== "false";
+  });
 
   return (
     <>
       <Header />
 
-      <main className="form-page-container">
-        <div className="form-card">
-          <div className="form-header">
-            <h2> Nova Postagem</h2>
-            <p>Preencha os campos abaixo para publicar um novo artigo no blog.</p>
+      <main className="home-content">
+
+        {/* BANNER */}
+        <section className="home-banner">
+
+          <div className="banner-info">
+            <h2>
+              Artigos & Conteúdos Educacionais
+            </h2>
+
+            <p>
+              Explore publicações desenvolvidas por nossos
+              professores e pesquisadores. Aprenda sobre
+              tecnologia, programação e inovação.
+            </p>
           </div>
 
-          {erro && <div className="form-alert error">⚠️ {erro}</div>}
-
-          <form onSubmit={handleSubmit} className="editor-form">
-            <div className="form-group">
-              <label htmlFor="titulo">Título da Postagem *</label>
-              <input
-                id="titulo"
-                type="text"
-                placeholder="Ex: Introdução à Programação Funcional em JavaScript"
-                value={titulo}
-                onChange={(e) => setTitulo(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="autor">Autor(a) / Docente *</label>
-              <input
-                id="autor"
-                type="text"
-                placeholder="Ex: Prof. Dr. Silva"
-                value={autor}
-                onChange={(e) => setAutor(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="conteudo">Conteúdo da Postagem *</label>
-              <textarea
-                id="conteudo"
-                rows="10"
-                placeholder="Escreva o texto completo do seu artigo..."
-                value={conteudo}
-                onChange={(e) => setConteudo(e.target.value)}
-                required
-              ></textarea>
-              <span className="char-count">
-                {conteudo.length} caracteres digitados
-              </span>
-            </div>
-
-            <div className="form-actions">
-              <button
-                type="button"
-                className="btn-cancel"
-                onClick={() => navigate(-1)}
-                disabled={salvando}
+          {isAuthenticated && (isDocente || isAdmin) && (
+            <div className="banner-actions">
+              <Link
+                to="/criar"
+                className="btn-cta-create"
               >
-                Cancelar
-              </button>
-              <button type="submit" className="btn-submit" disabled={salvando}>
-                {salvando ? "Publicando..." : "Publicar Postagem"}
-              </button>
+                Criar Novo Artigo
+              </Link>
             </div>
-          </form>
-        </div>
+          )}
+
+        </section>
+
+        {/* BUSCA */}
+        <section className="search-section">
+          <SearchBar
+            value={search}
+            onChange={setSearch}
+            onClear={() => setSearch("")}
+          />
+        </section>
+
+        {/* LOADING */}
+        {loading && (
+          <div className="state-message loading-state">
+            <div className="spinner"></div>
+
+            <p>
+              Carregando postagens...
+            </p>
+          </div>
+        )}
+
+        {/* ERRO */}
+        {error && (
+          <div className="state-message error-state">
+
+            <p>
+              ⚠️ {error}
+            </p>
+
+            <button
+              onClick={carregarPosts}
+              className="btn-retry"
+            >
+              Tentar Novamente
+            </button>
+
+          </div>
+        )}
+
+        {/* POSTS */}
+        {!loading && !error && (
+          <>
+            {postsAtivos.length > 0 ? (
+
+              <div className="posts-grid">
+
+                {postsAtivos.map((post) => (
+
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onDelete={handleDeletePrompt}
+                  />
+
+                ))}
+
+              </div>
+
+            ) : (
+
+              <div className="state-message empty-state">
+
+                <h3>
+                  Nenhuma postagem encontrada
+                </h3>
+
+                <p>
+                  {search
+                    ? `Não foram encontradas postagens com o termo "${search}".`
+                    : "Ainda não existem postagens cadastradas no blog."}
+                </p>
+
+                {search && (
+                  <button
+                    onClick={() => setSearch("")}
+                    className="btn-clear-search"
+                  >
+                    Limpar filtro de busca
+                  </button>
+                )}
+
+              </div>
+
+            )}
+          </>
+        )}
+
       </main>
+
+      {/* MODAL DE EXCLUSÃO */}
+      <ConfirmModal
+        isOpen={!!postToDelete}
+        title="Confirmar Exclusão"
+        message={`Deseja realmente excluir a postagem "${postToDelete?.titulo}"? Esta ação não pode ser desfeita.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setPostToDelete(null)}
+      />
+
     </>
   );
 }

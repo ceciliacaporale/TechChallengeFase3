@@ -89,12 +89,13 @@ export default function Header() {
       <div className="header-user">
         {isAuthenticated ? (
           <div className="user-profile">
-            <span
+            <Link
+              to="/perfil"
               className="user-name"
               title={user.email}
             >
               👤 {user.nome}
-            </span>
+            </Link>
 
             <button
               onClick={handleLogout}
