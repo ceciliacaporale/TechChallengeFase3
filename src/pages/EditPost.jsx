@@ -17,8 +17,6 @@ export default function EditPost() {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
 
-  const [ativo, setAtivo] = useState(true);
-
   useEffect(() => {
     async function carregarPost() {
       setLoading(true);
@@ -30,13 +28,6 @@ export default function EditPost() {
         setTitulo(post.titulo);
         setAutor(post.autor);
         setConteudo(post.conteudo);
-
-        // Recupera o status salvo no navegador
-        const ativoSalvo = localStorage.getItem(`post_ativo_${id}`);
-
-        // Se não existir, considera ativo
-        setAtivo(ativoSalvo !== "false");
-
       } catch (err) {
         console.error("Erro ao carregar post:", err);
 
@@ -70,12 +61,6 @@ export default function EditPost() {
         autor: autor.trim(),
         conteudo: conteudo.trim(),
       });
-
-      // Salva o status ativo/inativo no navegador
-      localStorage.setItem(
-        `post_ativo_${id}`,
-        JSON.stringify(ativo)
-      );
 
       showNotification(
         `Post "${titulo}" atualizado com sucesso!`,
@@ -182,26 +167,6 @@ export default function EditPost() {
                 <span className="char-count">
                   {conteudo.length} caracteres digitados
                 </span>
-              </div>
-
-              {/* ATIVO / INATIVO */}
-              <div className="form-group checkbox-group">
-                <label htmlFor="ativo">
-
-                  <input
-                    id="ativo"
-                    type="checkbox"
-                    checked={ativo}
-                    onChange={(e) =>
-                      setAtivo(e.target.checked)
-                    }
-                  />
-
-                  <span>
-                    Postagem ativa
-                  </span>
-
-                </label>
               </div>
 
               <div className="form-actions">

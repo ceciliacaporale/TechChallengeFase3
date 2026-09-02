@@ -15,7 +15,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
 
   const [postToDelete, setPostToDelete] = useState(null);
-  const {user, isAuthenticated, showNotification } = useAuth();
+  const { user, isAuthenticated, showNotification } = useAuth();
 
   const role = user?.role?.toLowerCase();
 
@@ -25,12 +25,15 @@ export default function Home() {
   const carregarPosts = useCallback(async () => {
     setLoading(true);
     setError("");
+
     try {
       const data = await fetchPosts({ search });
       setPosts(data);
     } catch (err) {
       console.error("Erro ao carregar posts:", err);
-      setError("Não foi possível carregar as postagens. Tente novamente.");
+      setError(
+        "Não foi possível carregar as postagens. Tente novamente."
+      );
     } finally {
       setLoading(false);
     }
@@ -50,13 +53,27 @@ export default function Home() {
 
   const handleConfirmDelete = async () => {
     if (!postToDelete) return;
+
     try {
       await deletePost(postToDelete.id);
-      showNotification(`Post "${postToDelete.titulo}" excluído com sucesso.`, "success");
-      setPosts((prev) => prev.filter((p) => String(p.id) !== String(postToDelete.id)));
+
+      showNotification(
+        `Post "${postToDelete.titulo}" excluído com sucesso.`,
+        "success"
+      );
+
+      setPosts((prev) =>
+        prev.filter(
+          (p) => String(p.id) !== String(postToDelete.id)
+        )
+      );
     } catch (err) {
       console.error("Erro ao excluir post:", err);
-      showNotification("Erro ao excluir o post.", "error");
+
+      showNotification(
+        "Erro ao excluir o post.",
+        "error"
+      );
     } finally {
       setPostToDelete(null);
     }
@@ -70,11 +87,14 @@ export default function Home() {
         <section className="home-banner">
           <div className="banner-info">
             <h2>Artigos & Conteúdos Educacionais</h2>
+
             <p>
-              Explore publicações desenvolvidas por nossos professores e
-              pesquisadores. Aprenda sobre tecnologia, programação e inovação.
+              Explore publicações desenvolvidas por nossos
+              professores e pesquisadores. Aprenda sobre
+              tecnologia, programação e inovação.
             </p>
           </div>
+
           {isAuthenticated && (isDocente || isAdmin) && (
             <div className="banner-actions">
               <Link to="/criar" className="btn-cta-create">
@@ -95,6 +115,7 @@ export default function Home() {
         {loading && (
           <div className="state-message loading-state">
             <div className="spinner"></div>
+
             <p>Carregando postagens...</p>
           </div>
         )}
@@ -102,7 +123,11 @@ export default function Home() {
         {error && (
           <div className="state-message error-state">
             <p>⚠️ {error}</p>
-            <button onClick={carregarPosts} className="btn-retry">
+
+            <button
+              onClick={carregarPosts}
+              className="btn-retry"
+            >
               Tentar Novamente
             </button>
           </div>
@@ -112,27 +137,24 @@ export default function Home() {
           <>
             {posts.length > 0 ? (
               <div className="posts-grid">
-                {posts.filter((post) => {
-                      const ativo = localStorage.getItem(`post_ativo_${post.id}`);
-                      return ativo !== "false";
-                    })
-                    .map((post) => (
-                      <PostCard
-                        key={post.id}
-                        post={post}
-                        onDelete={handleDeletePrompt}
-                      />
-                    ))}
-               
+                {posts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onDelete={handleDeletePrompt}
+                  />
+                ))}
               </div>
             ) : (
               <div className="state-message empty-state">
                 <h3>Nenhuma postagem encontrada</h3>
+
                 <p>
                   {search
                     ? `Não foram encontradas postagens com o termo "${search}".`
                     : "Ainda não existem postagens cadastradas no blog."}
                 </p>
+
                 {search && (
                   <button
                     onClick={() => setSearch("")}

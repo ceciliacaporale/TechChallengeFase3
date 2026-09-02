@@ -60,9 +60,6 @@ export default function Home() {
     try {
       await deletePost(postToDelete.id);
 
-      // Remove também o status salvo no navegador
-      localStorage.removeItem(`post_ativo_${postToDelete.id}`);
-
       showNotification(
         `Post "${postToDelete.titulo}" excluído com sucesso.`,
         "success"
@@ -84,23 +81,6 @@ export default function Home() {
       setPostToDelete(null);
     }
   };
-
-  /*
-   * FILTRA OS POSTS ATIVOS
-   *
-   * Se não existir nada no localStorage,
-   * o post será considerado ativo.
-   *
-   * Se estiver salvo como "false",
-   * o post não aparece.
-   */
-  const postsAtivos = posts.filter((post) => {
-    const ativo = localStorage.getItem(
-      `post_ativo_${post.id}`
-    );
-
-    return ativo !== "false";
-  });
 
   return (
     <>
@@ -177,11 +157,11 @@ export default function Home() {
         {/* POSTS */}
         {!loading && !error && (
           <>
-            {postsAtivos.length > 0 ? (
+            {posts.length > 0 ? (
 
               <div className="posts-grid">
 
-                {postsAtivos.map((post) => (
+                {posts.map((post) => (
 
                   <PostCard
                     key={post.id}
