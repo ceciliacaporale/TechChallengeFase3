@@ -18,6 +18,8 @@ ENV NODE_ENV=production
 WORKDIR /usr/src/app
 
 COPY package*.json ./
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/vite.config.js ./vite.config.js
 
 RUN npm ci --include=dev
 
