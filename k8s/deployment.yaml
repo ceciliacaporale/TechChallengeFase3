@@ -23,7 +23,7 @@ spec:
       # Script executado antes do container principal iniciar
       initContainers:
       - name: replace-env
-        image: storagedon/techchallange-2026:front-v0.0.11
+        image: storagedon/techchallange-2026:front-v0.0.12
         command:
         - sh
         - -c
@@ -46,7 +46,7 @@ spec:
 
       containers:
       - name: techchallenger-front
-        image: storagedon/techchallange-2026:front-v0.0.11
+        image: storagedon/techchallange-2026:front-v0.0.12
         ports:
         - containerPort: 3000
           name: http
