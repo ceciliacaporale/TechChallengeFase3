@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: techchallenger-front
+  namespace: fiap
+  labels:
+    app: techchallenger-front
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: techchallenger-front
+  template:
+    metadata:
+      labels:
+        app: techchallenger-front
+    spec:
+      # Volume temporário compartilhado entre os containers do Pod
+      volumes:
+      - name: app-dist
+        emptyDir: {}
+
+      # Script executado antes do container principal iniciar
+      initContainers:
+      - name: replace-env
+        image: storagedon/techchallange-2026:front-v0.0.5
+        command:
+        - sh
+        - -c
+        - |
+          # 1. Copia o dist original do container para o volume compartilhado
+          cp -r /usr/src/app/dist/* /dist-work/
+          
+          # 2. Procura pelo IP/Host antigo gerado no build do Vite e substitui pelo novo do Kubernetes
+          # IMPORTANTE: Troque 'http://localhost:3000' pela URL antiga que está dentro do seu build atual
+          OLD_URL="http://localhost:3000"
+          NEW_URL="$VITE_API_URL"
+          
+          find /dist-work -type f \( -name "*.js" -o -name "*.html" \) -exec sed -i "s|${OLD_URL}|${NEW_URL}|g" {} +
+        env:
+        - name: VITE_API_URL
+          value: "http://techchallenger.fiap.svc.cluster.local:3000"
+        volumeMounts:
+        - name: app-dist
+          mountPath: /dist-work
+
+      containers:
+      - name: techchallenger-front
+        image: storagedon/techchallange-2026:front-v0.0.5
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: VITE_API_URL
+          value: "http://techchallenger.fiap.svc.cluster.local:3000"
+        volumeMounts:
+        # Sobrepõe a pasta /dist original com os arquivos modificados pelo initContainer
+        - name: app-dist
+          mountPath: /usr/src/app/dist
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 20
