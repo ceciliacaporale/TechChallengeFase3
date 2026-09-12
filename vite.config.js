@@ -11,6 +11,6 @@ export default defineConfig({
   preview: {
     host: true,
     port: 3000,
-    allowedHosts: true
+    allowedHosts: ['techchallenger.duckdns.org']
   }
 })
