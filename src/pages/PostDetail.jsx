@@ -111,7 +111,7 @@ export default function PostDetail() {
 
       <main className="detail-container">
         <div className="detail-nav-actions">
-          <button onClick={() => navigate(-1)} className="btn-back">
+          <button onClick={() => "/home"} className="btn-back">
             ← Voltar para lista
           </button>
 
