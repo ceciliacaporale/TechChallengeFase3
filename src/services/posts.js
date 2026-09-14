@@ -73,14 +73,44 @@ function getLocalPosts() {
   }
 }
 
-function saveLocalPosts(posts) {
-  localStorage.setItem("tech_challenge_posts", JSON.stringify(posts));
+function getLocalComments() {
+  try {
+    const stored = JSON.parse(localStorage.getItem("tech_challenge_comments"));
+    return stored && typeof stored === "object" ? stored : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveLocalComment(postId, comment) {
+  const comments = getLocalComments();
+  const key = String(postId);
+  comments[key] = [...(comments[key] ?? []), comment];
+  localStorage.setItem("tech_challenge_comments", JSON.stringify(comments));
+}
+
+function normalizeComment(raw, index) {
+  return {
+    id: String(raw.id ?? raw._id ?? `c_${index}`),
+    autor:
+      typeof raw.autor === "object"
+        ? raw.autor?.nome ?? raw.autor?.name ?? "Estudante"
+        : raw.autor ?? raw.author ?? raw.user?.nome ?? raw.user?.name ?? "Estudante",
+    texto: raw.texto ?? raw.content ?? raw.text ?? "",
+    data: raw.data ?? raw.date ?? raw.createdAt ?? "",
+  };
 }
 
 function normalizePost(raw) {
   if (!raw) return null;
+  const id = String(raw.id ?? raw._id ?? crypto.randomUUID());
+  const apiComments = Array.isArray(raw.comentarios)
+    ? raw.comentarios
+    : Array.isArray(raw.comments)
+    ? raw.comments
+    : [];
   return {
-    id: String(raw.id ?? raw._id ?? crypto.randomUUID()),
+    id,
     titulo: raw.titulo ?? raw.title ?? "",
     conteudo: raw.conteudo ?? raw.content ?? raw.body ?? "",
     autor:
@@ -88,11 +118,7 @@ function normalizePost(raw) {
         ? raw.autor?.nome ?? raw.autor?.name ?? "Professor"
         : raw.autor ?? raw.author ?? raw.user?.name ?? "Professor",
     data: raw.data ?? raw.date ?? raw.createdAt ?? new Date().toISOString(),
-    comentarios: Array.isArray(raw.comentarios)
-      ? raw.comentarios
-      : Array.isArray(raw.comments)
-      ? raw.comments
-      : [],
+    comentarios: [...apiComments, ...(getLocalComments()[id] ?? [])].map(normalizeComment),
   };
 }
 
@@ -279,28 +305,34 @@ export async function addComment(postId, commentData) {
   };
 
   if (API_URL) {
+    const token = localStorage.getItem("tech_challenge_token");
+    let response = null;
+
     try {
-      const response = await fetch(`${API_URL}/posts/${postId}/comments`, {
+      response = await fetch(`${API_URL}/posts/${postId}/comments`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
         body: JSON.stringify(newComment),
       });
-      if (response.ok) {
-        return newComment;
-      }
     } catch (err) {
       console.warn("Falha ao adicionar comentário via API. Salvando localmente:", err);
     }
+
+    if (response?.ok) {
+      const data = await response.json().catch(() => ({}));
+      return normalizeComment({ ...newComment, ...data });
+    }
+
+    // 404/405 indicam que o backend não possui a rota de comentários
+    if (response && response.status !== 404 && response.status !== 405) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || data.message || `Erro HTTP ${response.status}`);
+    }
   }
 
-  const localPosts = getLocalPosts();
-  const index = localPosts.findIndex((p) => String(p.id) === String(postId));
-  if (index !== -1) {
-    if (!Array.isArray(localPosts[index].comentarios)) {
-      localPosts[index].comentarios = [];
-    }
-    localPosts[index].comentarios.push(newComment);
-    saveLocalPosts(localPosts);
-  }
+  saveLocalComment(postId, newComment);
   return newComment;
 }
