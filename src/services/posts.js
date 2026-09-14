@@ -139,6 +139,7 @@ export async function fetchPosts({ search = "", signal } = {}) {
 }
 
 export async function fetchPostById(id) {
+  console.log("API_URL:", API_URL)
   if (API_URL) {
     try {
       const response = await fetch(`${API_URL}/posts/${id}`, {
