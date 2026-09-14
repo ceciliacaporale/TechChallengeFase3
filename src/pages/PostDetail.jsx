@@ -52,15 +52,11 @@ export default function PostDetail() {
 
     setEnviandoComentario(true);
     try {
-      const autorFinal = nomeComentario.trim()
-        ? nomeComentario
-        : user
-          ? user.nome
-          : "Estudante Visitante";
+      const autorFinal = nomeComentario.trim() || user?.nome || "Estudante Visitante";
 
       const novoComentario = await addComment(id, {
         autor: autorFinal,
-        texto: textoComentario,
+        texto: textoComentario.trim(),
       });
 
       setPost((prev) => ({
@@ -70,7 +66,7 @@ export default function PostDetail() {
 
       setTextoComentario("");
       if (!user) setNomeComentario("");
-      showNotification("Comentario publicado com sucesso!", "success");
+      showNotification("Comentário publicado com sucesso!", "success");
     } catch (err) {
       console.error("Erro ao adicionar comentário:", err);
       showNotification("Erro ao publicar comentário. Tente novamente.", "error");
@@ -111,7 +107,7 @@ export default function PostDetail() {
 
       <main className="detail-container">
         <div className="detail-nav-actions">
-          <button onClick={() => "/home"} className="btn-back">
+          <button onClick={() => navigate("/home")} className="btn-back">
             ← Voltar para lista
           </button>
 
