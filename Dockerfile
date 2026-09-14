@@ -9,6 +9,9 @@ RUN npm ci
 
 COPY . .
 
+ARG VITE_API_URL=http://localhost:3000
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN npm run build
 # 2
 FROM node:20-alpine AS runner
