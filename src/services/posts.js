@@ -60,18 +60,18 @@ const MOCK_INITIAL_POSTS = [
   },
 ];
 
-function getLocalPosts() {
-  const stored = localStorage.getItem("tech_challenge_posts");
-  if (!stored) {
-    localStorage.setItem("tech_challenge_posts", JSON.stringify(MOCK_INITIAL_POSTS));
-    return MOCK_INITIAL_POSTS;
-  }
-  try {
-    return JSON.parse(stored);
-  } catch {
-    return MOCK_INITIAL_POSTS;
-  }
-}
+// function getLocalPosts() {
+//   const stored = localStorage.getItem("tech_challenge_posts");
+//   if (!stored) {
+//     localStorage.setItem("tech_challenge_posts", JSON.stringify(MOCK_INITIAL_POSTS));
+//     return MOCK_INITIAL_POSTS;
+//   }
+//   try {
+//     return JSON.parse(stored);
+//   } catch {
+//     return MOCK_INITIAL_POSTS;
+//   }
+// }
 
 function saveLocalPosts(posts) {
   localStorage.setItem("tech_challenge_posts", JSON.stringify(posts));
