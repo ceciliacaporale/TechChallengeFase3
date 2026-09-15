@@ -1,4 +1,4 @@
-# Tech Challenge - Fase 3: Blog Educacional
+# Tech Challenge Fase 3 (Front-end): Blog Educacional
 
 Front-End desenvolvido em **React** para uma plataforma educacional de blogging, permitindo que professores da rede pública publiquem e gerenciem conteúdos, enquanto alunos e visitantes podem consultar as postagens e interagir com os conteúdos.
 
@@ -690,11 +690,10 @@ A aplicação contempla os principais fluxos necessários para a plataforma:
 * Conteinerização com Docker;
 * Integração contínua com GitHub Actions.
 
-A solução foi estruturada utilizando **React 19, Vite, React Router, Context API e uma camada de serviços para comunicação com a API**, buscando manter a aplicação organizada, reutilizável e preparada para futuras evoluções.
+A solução foi estruturada utilizando <strong>React 19, Vite, React Router, Context API e uma camada de serviços para comunicação com a API</strong>, buscando manter a aplicação organizada, reutilizável e preparada para futuras evoluções.
 
 Durante o desenvolvimento, um dos principais desafios foi transformar os requisitos e funcionalidades inicialmente pensados no código em uma interface visual que fosse clara, intuitiva e fácil de utilizar. Além da implementação técnica, foi necessário pensar na experiência do usuário, na organização das informações e no design das telas, buscando garantir que a navegação e as funcionalidades fossem facilmente compreendidas pelos diferentes perfis de usuários da plataforma. Como resultado, foi possível entregar uma aplicação com uma interface intuitiva, com controle de acesso baseado em perfis, recursos administrativos, autenticação e gerenciamento de usuários, além das funcionalidades de publicação e consulta de conteúdos educacionais.
 
-O projeto também demonstrou a importância da integração entre **design, experiência do usuário, Front-End e Back-End**, mostrando que o desenvolvimento de uma aplicação completa exige não apenas a implementação das funcionalidades, mas também a preocupação com a forma como essas funcionalidades são apresentadas e utilizadas pelos usuários, seguind os conceitos de UX e UI.
-
+O projeto também demonstrou a importância da integração entre <strong>design, experiência do usuário, Front-End e Back-End</strong>, mostrando que o desenvolvimento de uma aplicação completa exige não apenas a implementação das funcionalidades, mas também a preocupação com a forma como essas funcionalidades são apresentadas e utilizadas pelos usuários, seguindo os conceitos de UX e UI.
 
 **Desenvolvido para o Tech Challenge — Fase 3 - Front-End — 2026**
