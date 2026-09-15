@@ -28,6 +28,7 @@ Link: https://techchallenger.duckdns.org/web/
 
 * React 19
 * Vite 8
+* JavaScript
 * React Router DOM 
 * CSS 
 * JWT (JSON Web Token)
